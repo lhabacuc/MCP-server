@@ -7,9 +7,6 @@ from groq import Groq
 from mcp.client.session import ClientSession
 from mcp.client.stdio import StdioServerParameters, stdio_client
 
-# =========================
-# CONFIGURAÇÃO
-# =========================
 MODEL = "moonshotai/kimi-k2-instruct-0905"
 SYSTEM_PROMPT = """
 Você é um Agente DevOps Local e Agente de Automação de PC.
@@ -28,14 +25,10 @@ Sempre confirme antes de executar operações importantes.
 
 groq_client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
-# MCP Global - mantém uma única conexão
 mcp_client_context = None
 mcp_session = None
 mcp_tools = []
 
-# =========================
-# INICIALIZAR MCP GLOBAL
-# =========================
 async def initialize_mcp():
     """Inicializa a conexão global com o servidor MCP"""
     global mcp_client_context, mcp_session, mcp_tools
@@ -48,7 +41,7 @@ async def initialize_mcp():
         args=["mcp_pc_devops_agent.py"]
     )
     
-    print("🔌 Conectando ao servidor MCP...")
+    print(" Conectando ao servidor MCP...")
     
     try:
         mcp_client_context = stdio_client(server_params)
@@ -58,7 +51,6 @@ async def initialize_mcp():
         mcp_session = await session_context.__aenter__()
         await mcp_session.initialize()
         
-        # Carregar ferramentas
         tools_response = await mcp_session.list_tools()
         mcp_tools = [
             {
@@ -79,9 +71,6 @@ async def initialize_mcp():
         print(f"❌ Erro ao inicializar MCP: {e}")
         raise
 
-# =========================
-# CLASSE DE SESSÃO
-# =========================
 class UserSession:
     def __init__(self, session_id):
         self.session_id = session_id
@@ -172,7 +161,6 @@ class UserSession:
                     
                     continue
                 
-                # Resposta final
                 else:
                     if assistant_msg.content:
                         self.messages.append({
@@ -196,10 +184,8 @@ class UserSession:
             "tool_executions": tool_executions
         }
 
-# Gerenciamento de sessões de usuário
 user_sessions = {}
 
-# =========================
 # WEBSOCKET HANDLER
 # =========================
 async def websocket_handler(request):
@@ -227,13 +213,11 @@ async def websocket_handler(request):
             "tools": tools_list
         })
         
-        # Enviar mensagem de status
         await ws.send_json({
             "type": "status",
             "message": "Conectado ao servidor MCP"
         })
         
-        # Loop de mensagens
         async for msg in ws:
             if msg.type == aiohttp.WSMsgType.TEXT:
                 try:
@@ -286,16 +270,13 @@ async def websocket_handler(request):
         print(f"❌ Erro no handler WebSocket: {e}")
     
     finally:
-        # Limpar sessão
         if session_id in user_sessions:
             del user_sessions[session_id]
         print(f"✗ Cliente desconectado: {session_id}")
     
     return ws
 
-# =========================
 # HTTP HANDLERS
-# =========================
 async def index_handler(request):
     """Serve a página HTML"""
     html_file = os.path.join(os.path.dirname(__file__), 'index.html')
@@ -316,7 +297,6 @@ async def health_handler(request):
         "tools_available": len(mcp_tools)
     })
 
-# =========================
 # LIFECYCLE
 # =========================
 async def on_startup(app):
@@ -345,8 +325,6 @@ async def on_cleanup(app):
             pass
 
 # =========================
-# APLICAÇÃO
-# =========================
 def create_app():
     app = web.Application()
     
@@ -361,13 +339,10 @@ def create_app():
     
     return app
 
-# =========================
-# MAIN
-# =========================
 def main():
     if not os.environ.get("GROQ_API_KEY"):
-        print("❌ Erro: GROQ_API_KEY não configurada")
-        print("   Execute: export GROQ_API_KEY='sua_chave_aqui'")
+        print("Erro: GROQ_API_KEY não configurada")
+        print("Execute: export GROQ_API_KEY='sua_chave_aqui'")
         exit(1)
     
     print("🚀 Iniciando servidor web...")
