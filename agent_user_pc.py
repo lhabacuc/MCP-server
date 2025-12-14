@@ -72,7 +72,7 @@ async def main():
             print("Digite 'clear' para limpar histórico\n")
             
             while True:
-                user_input = input("(I)EEE> ").strip()
+                user_input = input("(I am)>>>> ").strip()
                 
                 if not user_input:
                     continue
@@ -109,11 +109,9 @@ async def main():
                     
                     assistant_msg = completion.choices[0].message
                     
-                    # =========================
                     # PROCESSAR TOOL CALLS
                     # =========================
                     if assistant_msg.tool_calls:
-                        # Adicionar mensagem do assistente
                         messages.append({
                             "role": "assistant",
                             "content": assistant_msg.content or "",
@@ -173,7 +171,6 @@ async def main():
                                     "content": error_msg
                                 })
                         
-                        # Continuar o loop para processar os resultados
                         continue
                     
                     # =========================
@@ -191,7 +188,6 @@ async def main():
                 if iteration >= max_iterations:
                     print("\n⚠️  Limite de iterações atingido\n")
 
-# ENTRYPOINT
 if __name__ == "__main__":
     if not os.environ.get("GROQ_API_KEY"):
         print("Erro: GROQ_API_KEY não configurada")
