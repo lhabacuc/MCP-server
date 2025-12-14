@@ -298,7 +298,6 @@ async def health_handler(request):
     })
 
 # LIFECYCLE
-# =========================
 async def on_startup(app):
     """Executado ao iniciar o servidor"""
     try:
@@ -324,7 +323,6 @@ async def on_cleanup(app):
         except:
             pass
 
-# =========================
 def create_app():
     app = web.Application()
     
@@ -332,7 +330,6 @@ def create_app():
     app.on_startup.append(on_startup)
     app.on_cleanup.append(on_cleanup)
     
-    # Rotas
     app.router.add_get('/', index_handler)
     app.router.add_get('/health', health_handler)
     app.router.add_get('/ws', websocket_handler)
