@@ -95,7 +95,6 @@ async def main():
                 while iteration < max_iterations:
                     iteration += 1
                     
-                    # Fazer chamada à API Groq
                     try:
                         completion = groq_client.chat.completions.create(
                             model=MODEL,

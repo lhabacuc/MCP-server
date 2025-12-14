@@ -1,0 +1,6 @@
+aiohttp>=3.9.0
+groq>=0.4.0
+mcp>=0.9.0
+fastmcp>=0.1.0
+pyautogui>=0.9.54
+Pillow>=10.0.0

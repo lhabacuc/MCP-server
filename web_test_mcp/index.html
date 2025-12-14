@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCP DevOps Agent</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #000000;
+            --bg-secondary: #111111;
+            --border: #333333;
+            --text: #ffffff;
+            --text-secondary: #888888;
+            --text-tertiary: #666666;
+            --accent: #0070f3;
+            --accent-hover: #0761d1;
+            --success: #0070f3;
+            --shadow: 0 2px 8px rgba(0,0,0,0.04);
+            --shadow-lg: 0 4px 16px rgba(0,0,0,0.08);
+        }
+
+        [data-theme="light"] {
+            --bg: #ffffff;
+            --bg-secondary: #fafafa;
+            --border: #eaeaea;
+            --text: #000000;
+            --text-secondary: #666666;
+            --text-tertiary: #999999;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: var(--bg);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--text);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .sidebar-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .status-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .status-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .status-indicator {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--success);
+        }
+
+        .status-info {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .tools-section {
+            margin-top: 8px;
+        }
+
+        .tools-header {
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .tool-item {
+            padding: 10px 12px;
+            border-radius: 6px;
+            margin-bottom: 4px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.15s ease;
+            cursor: pointer;
+        }
+
+        .tool-item:hover {
+            background: var(--bg-secondary);
+            color: var(--text);
+        }
+
+        .tool-icon {
+            font-size: 14px;
+            opacity: 0.7;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg);
+        }
+
+        .header {
+            background: var(--bg);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            font-size: 13px;
+            font-weight: 400;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        .btn:hover {
+            border-color: var(--text);
+        }
+
+        .btn-primary {
+            background: var(--text);
+            color: var(--bg);
+            border-color: var(--text);
+        }
+
+        .btn-primary:hover {
+            background: var(--text-secondary);
+            border-color: var(--text-secondary);
+        }
+
+        /* Chat Area */
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 32px 24px;
+            scroll-behavior: smooth;
+        }
+
+        .message {
+            margin-bottom: 32px;
+            animation: fadeIn 0.2s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .message-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+        }
+
+        .message.user .message-avatar {
+            background: var(--text);
+            color: var(--bg);
+            border: none;
+        }
+
+        .message-author {
+            font-weight: 500;
+            font-size: 13px;
+            color: var(--text);
+        }
+
+        .message-time {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            margin-left: auto;
+        }
+
+        .message-content {
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text);
+            margin-left: 34px;
+        }
+
+        .message.user .message-content {
+            color: var(--text-secondary);
+        }
+
+        .tool-execution {
+            margin-left: 34px;
+            margin-top: 12px;
+            padding: 12px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 12px;
+        }
+
+        .tool-name {
+            font-weight: 500;
+            color: var(--text);
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+
+        .tool-result {
+            color: var(--text-secondary);
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Courier New', monospace;
+            white-space: pre-wrap;
+            font-size: 11px;
+            line-height: 1.6;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        /* Input Area */
+        .input-area {
+            background: var(--bg);
+            border-top: 1px solid var(--border);
+            padding: 16px 24px;
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+        }
+
+        .input-container {
+            flex: 1;
+            position: relative;
+        }
+
+        textarea {
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: var(--text);
+            font-size: 14px;
+            resize: none;
+            font-family: inherit;
+            line-height: 1.5;
+            min-height: 44px;
+            max-height: 150px;
+            transition: border-color 0.15s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--text);
+        }
+
+        textarea::placeholder {
+            color: var(--text-tertiary);
+        }
+
+        .send-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 8px;
+            background: var(--text);
+            border: none;
+            color: var(--bg);
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .send-btn:hover:not(:disabled) {
+            background: var(--text-secondary);
+            transform: translateY(-1px);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        /* Loading */
+        .loading {
+            display: flex;
+            gap: 4px;
+            padding: 4px 0;
+        }
+
+        .loading-dot {
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: var(--text-tertiary);
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .loading-dot:nth-child(1) { animation-delay: -0.32s; }
+        .loading-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-tertiary);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+
+            .messages {
+                padding: 16px;
+            }
+
+            .input-area {
+                padding: 12px;
+            }
+        }
+
+        /* Welcome message styling */
+        .welcome-content {
+            font-size: 14px;
+            line-height: 1.7;
+            color: var(--text-secondary);
+        }
+
+        .welcome-content ul {
+            margin: 12px 0;
+            padding-left: 20px;
+        }
+
+        .welcome-content li {
+            margin: 6px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">⚡</div>
+                    <span>MCP Agent</span>
+                </div>
+            </div>
+            <div class="sidebar-content">
+                <div class="status-card">
+                    <div class="status-header">
+                        <span class="status-indicator" id="statusIndicator"></span>
+                        <span>Connected</span>
+                    </div>
+                    <div class="status-info" id="statusInfo">
+                        Ready to assist with DevOps tasks
+                    </div>
+                </div>
+
+                <div class="tools-section">
+                    <div class="tools-header">Available Tools</div>
+                    <div id="toolsList">
+                        <div class="tool-item"><span class="tool-icon">▸</span> Terminal</div>
+                        <div class="tool-item"><span class="tool-icon">▸</span> Files</div>
+                        <div class="tool-item"><span class="tool-icon">▸</span> Git</div>
+                        <div class="tool-item"><span class="tool-icon">▸</span> Automation</div>
+                        <div class="tool-item"><span class="tool-icon">▸</span> Screenshot</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="header">
+                <div class="header-title">DevOps Assistant</div>
+                <div class="header-actions">
+                    <button class="btn" onclick="clearChat()">Clear</button>
+                    <button class="btn btn-primary" onclick="showSettings()">Settings</button>
+                </div>
+            </div>
+
+            <div class="chat-container">
+                <div class="messages" id="messages">
+                    <div class="message system">
+                        <div class="message-header">
+                            <div class="message-avatar">i</div>
+                            <span class="message-author">System</span>
+                            <span class="message-time" id="startTime"></span>
+                        </div>
+                        <div class="message-content welcome-content">
+                            Welcome to MCP DevOps Agent. I can help you with:
+                            <ul>
+                                <li>Execute terminal commands</li>
+                                <li>Manage files and directories</li>
+                                <li>Git operations</li>
+                                <li>Automation tasks</li>
+                                <li>System monitoring</li>
+                            </ul>
+                            How can I help you today?
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-area">
+                    <div class="input-wrapper">
+                        <div class="input-container">
+                            <textarea 
+                                id="userInput" 
+                                placeholder="Type your message..."
+                                rows="1"
+                            ></textarea>
+                        </div>
+                        <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+                            <span>↑</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuração
+        const WS_URL = 'ws://localhost:8080/ws';
+        let ws = null;
+        let isConnected = false;
+
+        // Inicializar
+        document.getElementById('startTime').textContent = new Date().toLocaleTimeString('pt-BR', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        // Auto-resize textarea
+        const textarea = document.getElementById('userInput');
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 150) + 'px';
+        });
+
+        // Enter para enviar
+        textarea.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Conectar ao WebSocket
+        function connectWebSocket() {
+            ws = new WebSocket(WS_URL);
+
+            ws.onopen = () => {
+                console.log('Connected to server');
+                isConnected = true;
+                updateStatus('online', 'Connected to MCP server');
+            };
+
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                handleMessage(data);
+            };
+
+            ws.onerror = (error) => {
+                console.error('WebSocket error:', error);
+                updateStatus('offline', 'Connection error');
+            };
+
+            ws.onclose = () => {
+                console.log('Disconnected from server');
+                isConnected = false;
+                updateStatus('offline', 'Disconnected');
+                setTimeout(connectWebSocket, 3000);
+            };
+        }
+
+        // Atualizar lista de ferramentas
+        function updateToolsList(tools) {
+            const toolsList = document.getElementById('toolsList');
+            toolsList.innerHTML = '';
+            
+            tools.forEach(tool => {
+                const div = document.createElement('div');
+                div.className = 'tool-item';
+                div.innerHTML = `<span class="tool-icon">▸</span> ${tool.name}`;
+                div.title = tool.description;
+                toolsList.appendChild(div);
+            });
+        }
+
+        // Atualizar status
+        function updateStatus(status, message) {
+            const info = document.getElementById('statusInfo');
+            info.textContent = message;
+        }
+
+        // Enviar mensagem
+        function sendMessage() {
+            const input = document.getElementById('userInput');
+            const message = input.value.trim();
+
+            if (!message) return;
+
+            addMessage('user', 'You', message);
+
+            if (isConnected) {
+                ws.send(JSON.stringify({
+                    type: 'message',
+                    content: message
+                }));
+            } else {
+                simulateResponse(message);
+            }
+
+            input.value = '';
+            input.style.height = 'auto';
+            input.focus();
+
+            document.getElementById('sendBtn').disabled = true;
+            addLoading();
+        }
+
+        // Adicionar mensagem
+        function addMessage(type, author, content, toolExecution = null) {
+            const messagesDiv = document.getElementById('messages');
+            const time = new Date().toLocaleTimeString('pt-BR', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            
+            let avatarText = type === 'user' ? 'U' : 'A';
+            if (type === 'system') avatarText = 'i';
+
+            messageDiv.innerHTML = `
+                <div class="message-header">
+                    <div class="message-avatar">${avatarText}</div>
+                    <span class="message-author">${author}</span>
+                    <span class="message-time">${time}</span>
+                </div>
+                <div class="message-content">${content}</div>
+            `;
+
+            if (toolExecution) {
+                const toolDiv = document.createElement('div');
+                toolDiv.className = 'tool-execution';
+                toolDiv.innerHTML = `
+                    <div class="tool-name">${toolExecution.name}</div>
+                    <div class="tool-result">${toolExecution.result}</div>
+                `;
+                messageDiv.appendChild(toolDiv);
+            }
+
+            messagesDiv.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        // Adicionar loading
+        function addLoading() {
+            const messagesDiv = document.getElementById('messages');
+            const loadingDiv = document.createElement('div');
+            loadingDiv.id = 'loadingIndicator';
+            loadingDiv.className = 'message assistant';
+            loadingDiv.innerHTML = `
+                <div class="message-header">
+                    <div class="message-avatar">A</div>
+                    <span class="message-author">Agent</span>
+                </div>
+                <div class="message-content">
+                    <div class="loading">
+                        <div class="loading-dot"></div>
+                        <div class="loading-dot"></div>
+                        <div class="loading-dot"></div>
+                    </div>
+                </div>
+            `;
+            messagesDiv.appendChild(loadingDiv);
+            scrollToBottom();
+        }
+
+        // Remover loading
+        function removeLoading() {
+            const loading = document.getElementById('loadingIndicator');
+            if (loading) loading.remove();
+        }
+
+        // Simular resposta
+        function simulateResponse(message) {
+            setTimeout(() => {
+                removeLoading();
+                
+                if (message.toLowerCase().includes('list') || message.toLowerCase().includes('ls')) {
+                    addMessage('assistant', 'Agent', 'Listing directory contents...', {
+                        name: 'list_dir',
+                        result: 'file1.txt\nfile2.py\nfolder1/\nfolder2/'
+                    });
+                } else if (message.toLowerCase().includes('git')) {
+                    addMessage('assistant', 'Agent', 'Executing Git command...', {
+                        name: 'git_status',
+                        result: 'On branch main\nYour branch is up to date with origin/main.'
+                    });
+                } else {
+                    addMessage('assistant', 'Agent', `I received your message: "${message}"`);
+                }
+
+                document.getElementById('sendBtn').disabled = false;
+            }, 1000);
+        }
+
+        // Tratar mensagens do servidor
+        function handleMessage(data) {
+            if (data.type === 'tools') {
+                updateToolsList(data.tools);
+            } else if (data.type === 'response') {
+                removeLoading();
+                if (data.content) {
+                    addMessage('assistant', 'Agent', data.content);
+                }
+                document.getElementById('sendBtn').disabled = false;
+            } else if (data.type === 'error') {
+                removeLoading();
+                addMessage('system', 'System', 'Error: ' + data.message);
+                document.getElementById('sendBtn').disabled = false;
+            }
+        }
+
+        // Scroll para o final
+        function scrollToBottom() {
+            const messagesDiv = document.getElementById('messages');
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        // Limpar chat
+        function clearChat() {
+            if (confirm('Clear conversation history?')) {
+                const messagesDiv = document.getElementById('messages');
+                messagesDiv.innerHTML = '';
+                addMessage('system', 'System', 'History cleared. How can I help?');
+                
+                if (isConnected) {
+                    ws.send(JSON.stringify({ type: 'clear' }));
+                }
+            }
+        }
+
+        // Mostrar configurações
+        function showSettings() {
+            alert('Settings coming soon!');
+        }
+
+        // Conectar ao WebSocket
+        connectWebSocket();
+    </script>
+</body>
+</html>
