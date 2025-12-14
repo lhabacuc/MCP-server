@@ -1,14 +1,12 @@
 # Makefile para MCP DevOps Agent
 # Compila tudo em um binário executável para Linux ou Windows
 
-# Variáveis
 PYTHON := python3
 PIP := pip3
 PYINSTALLER := pyinstaller
 PROJECT_NAME := mcp-agent-devops
 VERSION := 1.0.0
 
-# Detectar sistema operacional
 ifeq ($(OS),Windows_NT)
     DETECTED_OS := Windows
     EXE_EXT := .exe
@@ -21,27 +19,22 @@ else
     MKDIR := mkdir -p
 endif
 
-# Cores para output
 GREEN := \033[0;32m
 YELLOW := \033[1;33m
 RED := \033[0;31m
-NC := \033[0m # No Color
+NC := \033[0m
 
-# Diretórios
 BUILD_DIR := build
 DIST_DIR := dist
 SPEC_DIR := spec
 
-# Arquivos
 MAIN_FILE := web_server.py
 SPEC_FILE := $(PROJECT_NAME).spec
 
 .PHONY: all clean install build build-linux build-windows build-onefile test help setup
 
-# Target padrão
 all: help
 
-# Ajuda
 help:
 	@echo "$(GREEN)╔════════════════════════════════════════════════════╗$(NC)"
 	@echo "$(GREEN)║      MCP DevOps Agent - Build System             ║$(NC)"
@@ -61,18 +54,15 @@ help:
 	@echo ""
 	@echo "$(YELLOW)Sistema detectado:$(NC) $(DETECTED_OS)"
 
-# Instalar dependências
 install:
 	@echo "$(GREEN)📦 Instalando dependências...$(NC)"
 	$(PIP) install -r requirements.txt
 	$(PIP) install pyinstaller
 	@echo "$(GREEN)✓ Dependências instaladas$(NC)"
 
-# Setup completo
 setup: install
 	@echo "$(GREEN)🔧 Setup completo concluído!$(NC)"
 
-# Build para sistema atual
 build:
 	@echo "$(GREEN)🔨 Compilando para $(DETECTED_OS)...$(NC)"
 	$(PYINSTALLER) --name $(PROJECT_NAME) \
@@ -91,7 +81,6 @@ build:
 		$(MAIN_FILE)
 	@echo "$(GREEN)✓ Build concluído: dist/$(PROJECT_NAME)/$(PROJECT_NAME)$(EXE_EXT)$(NC)"
 
-# Build arquivo único (mais lento mas portável)
 build-onefile:
 	@echo "$(GREEN)🔨 Compilando em arquivo único...$(NC)"
 	$(PYINSTALLER) --name $(PROJECT_NAME) \
@@ -111,7 +100,6 @@ build-onefile:
 		$(MAIN_FILE)
 	@echo "$(GREEN)✓ Build concluído: dist/$(PROJECT_NAME)$(EXE_EXT)$(NC)"
 
-# Build específico para Linux
 build-linux:
 ifeq ($(DETECTED_OS),Linux)
 	@echo "$(GREEN)🐧 Compilando para Linux...$(NC)"
@@ -121,7 +109,6 @@ else
 	@exit 1
 endif
 
-# Build específico para Windows
 build-windows:
 ifeq ($(DETECTED_OS),Windows_NT)
 	@echo "$(GREEN)🪟 Compilando para Windows...$(NC)"
@@ -131,7 +118,6 @@ else
 	@echo "  make build-windows-docker"
 endif
 
-# Build Windows via Docker (cross-compilation)
 build-windows-docker:
 	@echo "$(GREEN)🐋 Compilando para Windows usando Docker...$(NC)"
 	docker run --rm -v "$(PWD):/src" \
