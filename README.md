@@ -1,8 +1,8 @@
 # MCP-server
 
 **AGENT-DEVOPS-WEB**  
-Este projeto é nice.
+This project is nice.
 
-Futuramente, vou usar a **smartagent-sf**: https://github.com/lhabacuc/smartagent  
-neste projeto, quando houver suporte de **mcp-e call-tools**.
+In the future, I will use **smartagent-sf**: https://github.com/lhabacuc/smartagent  
+in this project, when there is support for **mcp-e call-tools**.
 
