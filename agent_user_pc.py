@@ -28,9 +28,7 @@ groq_client = Groq(
     api_key=os.environ.get("GROQ_API_KEY")
 )
 
-# =========================
-# LOOP PRINCIPAL
-# =========================
+
 async def main():
     if 'DISPLAY' not in os.environ:
         os.environ['DISPLAY'] = ':0'
