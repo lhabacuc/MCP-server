@@ -50,7 +50,6 @@
             height: 100vh;
         }
 
-        /* Sidebar */
         .sidebar {
             width: 260px;
             background: var(--bg);
@@ -158,7 +157,6 @@
             color: var(--text);
         }
 
-        /* Main Content */
         .main-content {
             flex: 1;
             display: flex;
@@ -219,7 +217,6 @@
             color: var(--bg);
         }
 
-        /* Chat Area */
         .chat-container {
             flex: 1;
             display: flex;
@@ -298,7 +295,6 @@
             color: var(--text-secondary);
         }
 
-        /* Copy Button Styling */
         .copy-container {
             position: relative;
         }
@@ -329,7 +325,6 @@
             color: var(--text);
         }
 
-        /* Tool Execution Box */
         .tool-execution {
             margin-left: 34px;
             margin-top: 12px;
@@ -363,7 +358,6 @@
             border-radius: 4px;
         }
 
-        /* Input Area */
         .input-area {
             background: var(--bg);
             border-top: 1px solid var(--border);
@@ -442,7 +436,6 @@
             color: var(--text-tertiary);
         }
 
-        /* Loading Animation */
         .loading {
             display: flex;
             gap: 4px;
@@ -466,13 +459,11 @@
             40% { transform: scale(1); opacity: 1; }
         }
 
-        /* Scrollbar */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }
 
-        /* Modal Settings */
         .modal {
             display: none;
             position: fixed;
@@ -508,7 +499,6 @@
             color: var(--text-secondary); cursor: pointer; font-size: 20px;
         }
 
-        /* Markdown Styles */
         .md-content h1, .md-content h2, .md-content h3 { margin: 16px 0 8px 0; font-weight: 600; color: var(--text); }
         .md-content h1 { font-size: 1.4em; }
         .md-content h2 { font-size: 1.2em; }
@@ -536,7 +526,6 @@
         }
         .md-content a { color: var(--accent); }
 
-        /* Mobile */
         @media (max-width: 768px) {
             .sidebar { position: absolute; left: -260px; height: 100%; z-index: 100; }
             .sidebar.active { left: 0; transform: translateX(0); }
@@ -655,17 +644,13 @@
         let ws = null;
         let isConnected = false;
         
-        // --- Initialization ---
         document.addEventListener('DOMContentLoaded', () => {
-            // Theme Init
             const savedTheme = localStorage.getItem('theme') || 'dark';
             document.documentElement.setAttribute('data-theme', savedTheme);
             updateThemeIcon(savedTheme);
 
-            // Time Init
             document.getElementById('startTime').textContent = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
-            // Input Handling
             const textarea = document.getElementById('userInput');
             const sendBtn = document.getElementById('sendBtn');
 
@@ -686,7 +671,6 @@
             connectWebSocket();
         });
 
-        // --- Theme Functions ---
         function toggleTheme() {
             const current = document.documentElement.getAttribute('data-theme') || 'dark';
             const next = current === 'dark' ? 'light' : 'dark';
@@ -748,22 +732,17 @@
             statusInfo.textContent = text;
         }
 
-// Substitua a função handleServerMessage no HTML por esta versão corrigida:
-
 function handleServerMessage(data) {
-    console.log('Received:', data); // Para debug
+    console.log('Received:', data);
     
     removeLoading();
     
-    // Handle different message types from server
     if (data.type === 'response') {
-        // Final assistant response
         if (data.content) {
             addMessage('assistant', 'Agent', data.content);
         }
     } 
     else if (data.type === 'tool_execution') {
-        // Tool execution result
         addMessage('assistant', 'Agent', 
             `Executed tool: **${data.name}**`, 
             {
@@ -773,19 +752,15 @@ function handleServerMessage(data) {
         );
     }
     else if (data.type === 'tools') {
-        // Tools list received
         updateToolsList(data.tools);
     }
     else if (data.type === 'status') {
-        // Status message
         updateStatus('online', data.message);
     }
     else if (data.type === 'error') {
-        // Error message
         addMessage('system', 'System', `❌ Error: ${data.message}`);
     }
     
-    // Legacy support (if you had old message types)
     else if (data.type === 'message') {
         addMessage('assistant', 'Agent', data.content);
     } 
@@ -797,7 +772,6 @@ function handleServerMessage(data) {
     }
 }
 
-// Add this new function to update tools list
 function updateToolsList(tools) {
     const toolsList = document.getElementById('toolsList');
     if (!tools || tools.length === 0) return;
@@ -809,21 +783,17 @@ function updateToolsList(tools) {
     `).join('');
 }
 
-// Also update the sendMessage function for better handling:
 function sendMessage() {
     const input = document.getElementById('userInput');
     const text = input.value.trim();
     if (!text) return;
 
-    // Add User Message
     addMessage('user', 'You', escapeHtml(text));
     
-    // Clear Input
     input.value = '';
     input.style.height = 'auto';
     document.getElementById('sendBtn').disabled = true;
 
-    // Send via WebSocket
     if (isConnected && ws && ws.readyState === WebSocket.OPEN) {
         try {
             ws.send(JSON.stringify({ 
@@ -836,7 +806,6 @@ function sendMessage() {
             addMessage('system', 'System', '❌ Failed to send message');
         }
     } else {
-        // Fallback to simulation if not connected
         updateStatus('offline', 'Not connected - using demo mode');
         showLoading();
         simulateResponse(text);
@@ -853,13 +822,11 @@ function sendMessage() {
             let avatar = type === 'user' ? 'U' : 'A';
             if (type === 'system') avatar = 'i';
 
-            // Process Content
             let finalHtml = content;
             if (type === 'assistant' || type === 'system') {
                 finalHtml = parseMarkdown(content);
             }
 
-            // Copy Logic: Store raw content in data attribute to avoid escaping hell
             const rawContent = encodeURIComponent(content);
 
             let copyBtnHtml = '';
@@ -894,7 +861,6 @@ function sendMessage() {
             scrollToBottom();
         }
 
-        // --- Helpers ---
         function showLoading() {
             const messagesDiv = document.getElementById('messages');
             if (document.getElementById('loadingIndicator')) return;
@@ -931,7 +897,6 @@ function sendMessage() {
 
         function clearChat() {
             const messages = document.getElementById('messages');
-            // Keep only the first welcome message
             const welcome = messages.querySelector('.message.system');
             messages.innerHTML = '';
             if (welcome) messages.appendChild(welcome);
@@ -960,25 +925,21 @@ function sendMessage() {
                 .replace(/'/g, "&#039;");
         }
 
-        // --- Simple Markdown Parser ---
         function parseMarkdown(text) {
             if (!text) return '';
 
-            // 1. Temporarily replace code blocks
             const codeBlocks = [];
             text = text.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
                 codeBlocks.push(`<pre><code>${escapeHtml(code.trim())}</code></pre>`);
                 return `__CODEBLOCK_${codeBlocks.length - 1}__`;
             });
 
-            // 2. Inline Code
             const inlineCode = [];
             text = text.replace(/`([^`]+)`/g, (match, code) => {
                 inlineCode.push(`<code>${escapeHtml(code)}</code>`);
                 return `__INLINE_${inlineCode.length - 1}__`;
             });
 
-            // 3. Basic Formatting
             let html = text
                 .replace(/^### (.*$)/gim, '<h3>$1</h3>')
                 .replace(/^## (.*$)/gim, '<h2>$1</h2>')
@@ -986,7 +947,6 @@ function sendMessage() {
                 .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
                 .replace(/\*(.*)\*/gim, '<em>$1</em>');
 
-            // 4. Lists (Simple implementation)
             const lines = html.split('\n');
             let inList = false;
             let processedLines = lines.map(line => {
@@ -1006,18 +966,14 @@ function sendMessage() {
             if (inList) processedLines.push('</ul>');
             html = processedLines.join('\n');
 
-            // 5. Paragraphs (Process only non-html tag lines)
             html = html.replace(/^(?!<[a-z]).+$/gm, '<p>$&</p>');
 
-            // 6. Restore Code
             html = html.replace(/__INLINE_(\d+)__/g, (match, i) => inlineCode[i]);
             html = html.replace(/__CODEBLOCK_(\d+)__/g, (match, i) => codeBlocks[i]);
 
-            // Cleanup empty p tags
             return html.replace(/<p>\s*<\/p>/g, '');
         }
 
-        // --- Simulation Logic (Fallback) ---
         function simulateResponse(msg) {
             const lower = msg.toLowerCase();
             setTimeout(() => {
@@ -1047,7 +1003,6 @@ function sendMessage() {
             }, 800 + Math.random() * 1000);
         }
 
-        // --- Settings Modal ---
         function showSettings() {
             document.getElementById('settingsModal').classList.add('active');
             document.getElementById('wsUrlInput').value = WS_URL;
