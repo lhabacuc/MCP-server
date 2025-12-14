@@ -748,100 +748,41 @@
             statusInfo.textContent = text;
         }
 
-// Substitua a função handleServerMessage no HTML por esta versão corrigida:
+        // --- Messaging Logic ---
+        function sendMessage() {
+            const input = document.getElementById('userInput');
+            const text = input.value.trim();
+            if (!text) return;
 
-function handleServerMessage(data) {
-    console.log('Received:', data); // Para debug
-    
-    removeLoading();
-    
-    // Handle different message types from server
-    if (data.type === 'response') {
-        // Final assistant response
-        if (data.content) {
-            addMessage('assistant', 'Agent', data.content);
-        }
-    } 
-    else if (data.type === 'tool_execution') {
-        // Tool execution result
-        addMessage('assistant', 'Agent', 
-            `Executed tool: **${data.name}**`, 
-            {
-                name: data.name,
-                result: JSON.stringify(data.args, null, 2) + '\n\nResult:\n' + data.result
+            // Add User Message
+            addMessage('user', 'You', escapeHtml(text));
+            
+            // Clear Input
+            input.value = '';
+            input.style.height = 'auto';
+            document.getElementById('sendBtn').disabled = true;
+
+            // Send or Simulate
+            if (isConnected && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: 'message', content: text }));
+                showLoading();
+            } else {
+                showLoading();
+                simulateResponse(text);
             }
-        );
-    }
-    else if (data.type === 'tools') {
-        // Tools list received
-        updateToolsList(data.tools);
-    }
-    else if (data.type === 'status') {
-        // Status message
-        updateStatus('online', data.message);
-    }
-    else if (data.type === 'error') {
-        // Error message
-        addMessage('system', 'System', `❌ Error: ${data.message}`);
-    }
-    
-    // Legacy support (if you had old message types)
-    else if (data.type === 'message') {
-        addMessage('assistant', 'Agent', data.content);
-    } 
-    else if (data.type === 'tool_result') {
-        addMessage('assistant', 'Agent', data.content, {
-            name: data.tool,
-            result: data.result
-        });
-    }
-}
-
-// Add this new function to update tools list
-function updateToolsList(tools) {
-    const toolsList = document.getElementById('toolsList');
-    if (!tools || tools.length === 0) return;
-    
-    toolsList.innerHTML = tools.map(tool => `
-        <div class="tool-item" title="${escapeHtml(tool.description || '')}">
-            <span class="tool-icon">▸</span> ${escapeHtml(tool.name)}
-        </div>
-    `).join('');
-}
-
-// Also update the sendMessage function for better handling:
-function sendMessage() {
-    const input = document.getElementById('userInput');
-    const text = input.value.trim();
-    if (!text) return;
-
-    // Add User Message
-    addMessage('user', 'You', escapeHtml(text));
-    
-    // Clear Input
-    input.value = '';
-    input.style.height = 'auto';
-    document.getElementById('sendBtn').disabled = true;
-
-    // Send via WebSocket
-    if (isConnected && ws && ws.readyState === WebSocket.OPEN) {
-        try {
-            ws.send(JSON.stringify({ 
-                type: 'message', 
-                content: text 
-            }));
-            showLoading();
-        } catch (e) {
-            console.error('Send error:', e);
-            addMessage('system', 'System', '❌ Failed to send message');
         }
-    } else {
-        // Fallback to simulation if not connected
-        updateStatus('offline', 'Not connected - using demo mode');
-        showLoading();
-        simulateResponse(text);
-    }
-} 
+
+        function handleServerMessage(data) {
+            removeLoading();
+            if (data.type === 'message') {
+                addMessage('assistant', 'Agent', data.content);
+            } else if (data.type === 'tool_result') {
+                addMessage('assistant', 'Agent', data.content, {
+                    name: data.tool,
+                    result: data.result
+                });
+            }
+        }
 
         function addMessage(type, author, content, toolData = null) {
             const messagesDiv = document.getElementById('messages');
